@@ -110,11 +110,7 @@ merged_file<-merge(merged_file,
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # removing translation with in total smaller reads
-dir.create(paste0(path_plot,"miscelleneous/"), 
-           showWarnings = TRUE, 
-           recursive = FALSE, 
-           mode = "0777"
-)
+
 pdf(paste0(path_plot,"miscelleneous/raw_histogram_for_threshold.pdf"))
 print((histogram_for_raw_count(merged_file,
                                merged_file$raw_counts_count,

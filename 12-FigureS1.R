@@ -9,11 +9,7 @@ path_input<-paste0(getwd(),"/input_data/")
 path_plot<-paste0(getwd(),"/plot/")
 path_output<-paste0(getwd(),"/output/")
 
-dir.create(paste0(path_plot,"FigureS1/"), 
-           showWarnings = TRUE, 
-           recursive = FALSE, 
-           mode = "0777"
-)
+
 
 replicate_1<-read.csv(paste0(path_output,"merged_file_post_remoal.csv"))
 replicate_1<-subset(replicate_1,replicate_1$Codon == "Non Stop Codon")
@@ -131,7 +127,7 @@ amino_acid_frequency<-as.data.frame(rbind(amino_acid_frequency,Codon_data))
 amino_acid_frequency$Position<-factor(amino_acid_frequency$Position, 
                                       levels = c("EF","-12","-11","-10","-9","-8","-7","-6","-5","-4","-3","-2","-1"))
 
-pdf(paste0(path_output,"FigureS1/Frequency_ExpectedFrequency12x.pdf"))
+pdf(paste0(path_plot,"FigureS1/Frequency_ExpectedFrequency12x.pdf"))
 ggplot(amino_acid_frequency)+
   geom_bar(
     aes(x=Position , 

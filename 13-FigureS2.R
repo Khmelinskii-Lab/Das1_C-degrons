@@ -11,12 +11,7 @@ setwd("Y:/lab data/susmitha/edwin/DAS1_SCF_Paper/")
 path_plot<-paste0(getwd(),"/plot/")
 path_dataset<-paste0(getwd(),"/output/")
 path_shap_data<-paste0(path_dataset,"/shap_instable/")
-dir.create(
-  paste0(path_plot,"FigureS2/"),
-  showWarnings = TRUE,
-  recursive = FALSE,
-  mode = "0777"
-)
+
 
 # read the dataset 
 
@@ -210,12 +205,7 @@ normalized_data_instable<-normalized_data_instable[order(row.names(normalized_da
 seq<-instable_shap[,1:240] * normalized_data_instable[,1:240]
 
 
-dir.create(
-  paste0(path_plot,"FigureS2/cluster_instable_12x/"),
-  showWarnings = TRUE,
-  recursive = FALSE,
-  mode = "0777"
-)
+
 path_cluster<-paste0(path_plot,"FigureS2/cluster_instable_12x/")
 
 cs1 = make_col_scheme(chars=c("H","M","A","P","T","B"), groups=c('Hydrophobicity','MOC', "AliphaticIndex",'PPIndex', 'AlphaTurn','Bulkiness'), 

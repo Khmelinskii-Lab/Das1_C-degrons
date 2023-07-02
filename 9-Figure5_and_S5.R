@@ -13,7 +13,7 @@ path_output<-paste0(getwd(),"/output/")
 
 #### -------------------------------------- for correlation among different dataset --------------------------------------------------------------###
 merged_file<-read.csv(paste0(path_output,"/merged_file_for_rep2and3.csv"))
-deg<-read.csv("Y:/lab data/susmitha/edwin/March23/output_files/degron_effect_d1_WT.csv")
+deg<-read.csv(paste0(path_input,"/other_dataset/degron_effect_d1_WT.csv"))
 merged_file_non_stop<-subset(merged_file,merged_file$Codon == "Non Stop Codon")
 
 merged_file_subset<-subset(merged_file_non_stop, merged_file_non_stop$raw_counts_translation %in% deg$raw_counts_translation)
@@ -93,22 +93,7 @@ PSI_merged<-PSI_merged[!duplicated(PSI_merged$Translations), ]
 row.names(PSI_merged)<-PSI_merged$Translations
 PSI_merged$Translations<-NULL
 
-dir.create(paste0(path_plot,"Figure6/"), 
-           showWarnings = TRUE, 
-           recursive = FALSE, 
-           mode = "0777"
-)
 
-dir.create(paste0(path_plot,"FigureS5/"), 
-           showWarnings = TRUE, 
-           recursive = FALSE, 
-           mode = "0777"
-)
-dir.create(paste0(path_plot,"FigureS6/"), 
-           showWarnings = TRUE, 
-           recursive = FALSE, 
-           mode = "0777"
-)
 
 PSI_merged<-read.csv(
           paste0(path_output,
@@ -818,6 +803,7 @@ amino_acid<-c("A","C","D","E","F","G","H","I","K","L","M","N","P","Q","R","S","T
 t<-strrep(amino_acid, 12)  
 
 WT_Doa10_unstable$differnce<-WT_Doa10_unstable$value.y - WT_Doa10_unstable$value.x
+
 stabilized<-subset(data_with_stat_test,data_with_stat_test$category == "Stabilized")
 count<-nrow(stabilized)
 translation<-c(t,stabilized$translation)
@@ -1446,186 +1432,6 @@ ggplot(WT_cdc53_unstable)+
   ylab ("PSI (cdc53)")+
   ggtitle("Marking Das1 substrates peptides in cdc53-WT variation")
 dev.off()
-
-#cdc53-das1
-
-q<-as.data.frame(PSI_merged[,c("Unstable_Das1_SCF_rep2","Unstable_Das1_SCF_rep3")])
-Das1<-lmFit(q[,c(1,2)])
-mean_result_Das1<-q
-mean_result_Das1$effect<-Das1$sigma * Das1$stdev.unscaled
-mean_result_Das1$ci_95<-Das1$coefficients * qt(0.975 , Das1$df.residual)
-mean_result_Das1$value<-Das1$coefficients
-
-p<-as.data.frame(PSI_merged[,c("Unstable_cdc53_SCF_rep2","Unstable_cdc53_SCF_rep3")])
-cdc53<-lmFit(p[,c(1,2)])
-mean_result_cdc53<-p
-mean_result_cdc53$effect<-cdc53$sigma * cdc53$stdev.unscaled
-mean_result_cdc53$ci_95<-cdc53$coefficients * qt(0.975 , cdc53$df.residual)
-mean_result_cdc53$value<-cdc53$coefficients
-
-
-mean_result_cdc53$translation<-row.names(mean_result_cdc53)
-mean_result_Das1$translation<-row.names(mean_result_Das1)
-Das1_cdc53<-merge(mean_result_Das1, mean_result_cdc53, by= "translation")
-
-#pdf(paste0(path_plot,"PSI_cdc53_Das1_afterLMFit.pdf"))
-ggplot(Das1_cdc53)+
-  geom_point(aes(x = value.x, y = value.y))+
-  theme_bw()+
-  xlab("Wild type ")+
-  ylab("cdc53")+
-  xlim(0,1)+
-  ylim(0,1)+
-  annotate("text",
-           x = 0.05, y = 0.9, 
-           label = paste0("R  : ",round(cor(Das1_cdc53$value.x,Das1_cdc53$value.y),2)),
-           colour = "red")+
-  ggtitle("PSI cdc53 versus Das1 after lmFit")
-#dev.off()
-
-#only_instable<-readxl::read_xlsx("Y:/lab data/susmitha/edwin/for_paper/input_data/4726.xlsx")
-Das1_cdc53$group<-"Stable"
-Das1_cdc53$group<-ifelse(Das1_cdc53$translation %in% only_instable$translation, "Unstable", Das1_cdc53$group)
-#pdf(paste0(path_plot,"Das1_cdc53_stable_highlighted.pdf"))
-Das1_cdc53 %>% ggplot(aes(x = value.x, y = value.y))+
-  geom_point(aes(color = group))+
-  theme_bw()+
-  scale_color_manual(values = c( 
-    #"Strongly Stabilized" = "#98473E",
-    "Stable" = "#8d99ae",
-    #"Intermediate" = "#8d99ae",
-    "Unstable" = "#2b2d42"))+
-  xlim(0,1)+
-  ylim(0,1)+
-  xlab("PSI (Das1)")+
-  ylab ("PSI (cdc53)")+
-  ggtitle("Highlighting stable peptides in lmFit data")
-#dev.off()
-
-### remove dataset with stable controls in the plots
-Das1_cdc53_unstable<-subset(Das1_cdc53,Das1_cdc53$group == "Unstable")
-
-
-#### -------------------------------------- different category --------------------------------------------------------------###
-
-q_data<-Das1_cdc53_unstable[,c("translation" ,"Unstable_Das1_SCF_rep2","Unstable_Das1_SCF_rep3","Unstable_cdc53_SCF_rep2","Unstable_cdc53_SCF_rep3")]
-q_data<-melt(q_data,id = "translation")
-q_data$group<-str_split_fixed(q_data$variable,"_",3)[,2]
-stat.test <- q_data %>%
-  group_by(translation) %>%
-  t_test(value ~ group) %>%
-  adjust_pvalue(method = "BH") %>%
-  add_significance()
-
-Das1_cdc53_unstable$differnce<-Das1_cdc53_unstable$value.y - Das1_cdc53_unstable$value.x
-
-Das1_cdc53_unstable$color<-ifelse(Das1_cdc53_unstable$differnce > 0.1, "Potential degron","No effect")
-Das1_cdc53_unstable$category<-"No Effect"
-Das1_cdc53_unstable$category<-ifelse((Das1_cdc53_unstable$color == "Potential degron" & 
-                                        Das1_cdc53_unstable$value.y < 0.67),"Intermediate", Das1_cdc53_unstable$category)
-Das1_cdc53_unstable$category<-ifelse((Das1_cdc53_unstable$color == "Potential degron" & Das1_cdc53_unstable$value.y > 0.67 ),"Stabilized", Das1_cdc53_unstable$category)
-#Das1_cdc53_unstable$category<-ifelse((Das1_cdc53_unstable$color == "Potential degron" & Das1_cdc53_unstable$value.y > 0.58 ),"Strongly Stabilized", Das1_cdc53_unstable$category)
-Das1_cdc53_unstable$category<-ifelse((Das1_cdc53_unstable$color == "Potential degron" & Das1_cdc53_unstable$value.x > 0.5 ),"No Effect", Das1_cdc53_unstable$category)
-
-
-
-data_with_stat_test<-merge(stat.test, Das1_cdc53_unstable, id  = "translation")
-data_with_stat_test$category<-ifelse(data_with_stat_test$p.adj < 0.05,"No Effect" ,data_with_stat_test$category)
-#pdf(paste0(path_plot,"Das1_cdc53_3Category.pdf"))
-data_with_stat_test %>% ggplot(aes(x = value.x, y = value.y))+
-  geom_point(aes(color = category))+
-  theme_bw()+
-  scale_color_manual(values = c( 
-    #"Strongly Stabilized" = "#98473E",
-    "Stabilized" = "#ff5400",
-    "Intermediate" = "#8d99ae",
-    "No Effect" = "#2b2d42"))+
-  xlim(0,1)+
-  ylim(0,1)+
-  xlab("PSI (Das1)")+
-  ylab ("PSI (cdc53)")+
-  ggtitle("Putting statistically insignificant points as No Effect  with multiple testing")+
-  annotate("text", 
-           x = 0.15, y = 0.92, 
-           label = paste0("Threshold : \n Difference :0.1, \nPSI Das1: 0.5; \nPSI cdc53 : 0.67"),
-           colour = "red", fontface =2)
-#dev.off()
-# hydrophobicity
-
-
-data_with_stat_test$hydrophobicity<-hydrophobicity(data_with_stat_test$translation)
-
-my_comparisons <- list( c("No Effect", "Stabilized"), c("Stabilized", "Intermediate"), c("No Effect", "Intermediate") )
-#pdf(paste0(path_plot,"3Category_hydrophobicity.pdf"))
-ggplot(data_with_stat_test)+
-  geom_boxplot(
-    aes(x = category, 
-        y = hydrophobicity, color = category),
-    coef = 1e30,lwd=0.25
-  )+
-  ylim(-4,4)+
-  scale_color_manual(values = c( 
-    #"Strongly Stabilized" = "#98473E",
-    "Stabilized" = "#ff5400",
-    "Intermediate" = "#8d99ae",
-    "No Effect" = "#2b2d42"))+
-  guides(col = FALSE)+
-  ylab("Hydrophobicity")+
-  xlab("")+
-  ggtitle("Variation of hydrophobicity")+
-  theme_bw()
-#dev.off()
-
-data_with_stat_test_Das1<-read.csv(paste0(path_output,"data_with_stat_test_WT_das1.csv"))
-
-Das1_group<-data_with_stat_test_Das1[,c("translation","category")]
-names(Das1_group)<-c("translation","category_Das1")
-Das1_cdc53_unstable<-merge(Das1_cdc53_unstable,Das1_group, by = "translation")
-
-#pdf(paste0(path_plot,"Das1Peptides_highlighted_in_cdc53Das1.pdf"))
-ggplot(Das1_cdc53_unstable)+
-  
-  geom_point(data = Das1_cdc53_unstable,aes(x = value.x, y = value.y), color = "black")+
-  geom_point(data = subset(Das1_cdc53_unstable,Das1_cdc53_unstable$category_Das1 == "Intermediate"),
-             aes(x = value.x, y = value.y), color = "grey")+
-  geom_point(data = subset(Das1_cdc53_unstable,Das1_cdc53_unstable$category_Das1 == "Stabilized"),
-             aes(x = value.x, y = value.y), color = "red")+
-  #geom_point(data = subset(Das1_cdc53_unstable,Das1_cdc53_unstable$category_Das1 == "Intermediate"),
-  #          aes(x = value.x, y = value.y), color = "grey")+
-  theme_bw()+
-  #scale_color_manual(values = c( 
-  # #"Strongly Stabilized" = "#98473E",
-  #"Stabilized" = "#ff5400",
-  #"Intermediate" = "#8d99ae",
-  #"No Effect" = "#2b2d42"))+
-  xlim(0,1)+
-  ylim(0,1)+
-  xlab("PSI (Das1)")+
-  ylab ("PSI (cdc53)")+
-  ggtitle("Marking Das1 substrates peptides in cdc53-Das1 variation")
-#dev.off()
-
-#pdf(paste0(path_plot,"Das1Peptides_highlighted_in_cdc53Das1.pdf"))
-ggplot(Das1_cdc53_unstable)+
-  
-  geom_point(data = subset(Das1_cdc53_unstable,Das1_cdc53_unstable$category_Das1 == "No Effect"),
-             aes(x = value.x, y = value.y), color = "black")+
-  geom_point(data = subset(Das1_cdc53_unstable,Das1_cdc53_unstable$category_Das1 == "Stabilized"),
-             aes(x = value.x, y = value.y), color = "red")+
-  geom_point(data = subset(Das1_cdc53_unstable,Das1_cdc53_unstable$category_Das1 == "Intermediate"),
-             aes(x = value.x, y = value.y), color = "grey")+
-  theme_bw()+
-  #scale_color_manual(values = c( 
-  # #"Strongly Stabilized" = "#98473E",
-  #"Stabilized" = "#ff5400",
-  #"Intermediate" = "#8d99ae",
-  #"No Effect" = "#2b2d42"))+
-  xlim(0,1)+
-  ylim(0,1)+
-  xlab("PSI (Das1)")+
-  ylab ("PSI (cdc53)")+
-  ggtitle("Marking Das1 Intermediate peptides in cdc53-Das1 variation")
-#dev.off()
 
 write.csv(data_with_stat_test,
           paste0(path_output,"data_with_stat_test_Das1_cdc53.csv")

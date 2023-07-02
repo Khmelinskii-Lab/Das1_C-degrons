@@ -81,12 +81,7 @@ delta$Amino_Acid<-factor(delta$Amino_Acid,
                             levels = rev(c("Stop","A","C","D","E","F","G","H","I","K","L","M","N","P","Q","R","S","T","V","W","Y")))
 capping$value<-ifelse(capping$value > 0.75,0.75,capping$value)
 
-dir.create(
-  paste0(path_plot,"Figure4/"),
-  showWarnings = TRUE,
-  recursive = FALSE,
-  mode = "0777"
-)
+
 
 pdf(paste0(path_plot,"Figure4/IN1_capping.pdf"))
 print(

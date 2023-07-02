@@ -17,11 +17,7 @@ dataset_for_frequency<-dataset[,c("raw_counts_translation","byaa_pooled_PSI")]
 dataset_for_frequency<-unique(dataset_for_frequency)
 dataset_for_frequency$CTerminal<-substr(dataset_for_frequency$raw_counts_translation,12,12)
 
-dir.create(paste0(path_plot,"Figure1/"), 
-           showWarnings = TRUE, 
-           recursive = FALSE, 
-           mode = "0777"
-)
+
 
 # boxplot with C terminal PSI
 pdf(paste0(path_plot,"Figure1/boxplot_PSI_Cterminal.pdf"))
@@ -200,11 +196,7 @@ dev.off()
 
 # for C terminal di peptide frequency unstable
 
-dir.create(paste0(path_plot,"Figure2/"), 
-           showWarnings = TRUE, 
-           recursive = FALSE, 
-           mode = "0777"
-)
+
 
 dataset_for_frequency<-dataset[,c("raw_counts_translation","byaa_pooled_PSI")]
 dataset_for_frequency<-unique(dataset_for_frequency)
@@ -321,11 +313,7 @@ d$Label2<-ifelse(d$translation == "IIGCIAICLMVN", "VN3",d$Label2)
 d$Label2<-ifelse(d$translation == "ELSRLLPASFSL", "XS",d$Label2)
 
 d_sub<-subset(d,!(d$Label2 == "Others"))
-dir.create(paste0(path_plot,"Figure3/"), 
-           showWarnings = TRUE, 
-           recursive = FALSE, 
-           mode = "0777"
-)
+
 
 pdf(paste0(path_plot,"Figure3/highlighted_N.pdf"))
 print(

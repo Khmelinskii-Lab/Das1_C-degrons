@@ -182,7 +182,7 @@ dev.off()
 
 
 # frequency 
-dataset<-read.csv("Y:/lab data/susmitha/edwin/for_paper/output/merged_file_post_remoal.csv")
+dataset<-dataset<-read.csv(paste0(path_output,"merged_file_post_remoal.csv"))
 dataset<-subset(dataset,dataset$Codon == "Non Stop Codon")
 names(dataset)
 dataset_for_frequency<-dataset[,c("raw_counts_translation","byaa_pooled_PSI")]
@@ -509,7 +509,7 @@ densi<-WT_Das1 %>%
 
 PSI_hydro <- PSI_hydro + rremove("legend")
 #densi <- densi + 
-pdf(paste0(path_plot,"FigureS6/Hydrophobicity_PSI_Cter"))
+pdf(paste0(path_plot,"FigureS6/Hydrophobicity_PSI_Cter.pdf"))
 plot_grid(PSI_hydro,densi)
 dev.off()
 
