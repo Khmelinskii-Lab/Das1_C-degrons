@@ -432,12 +432,12 @@ di$Amino_acid_1<-factor(psi$Amino_acid_1, levels = (c("A","C","D","E","F","G","H
 psi$Amino_acid_2<-factor(psi$Amino_acid_2, levels = rev(c("A","C","D","E","F","G","H","I","K","L","M","N","P","Q","R","S","T","V","W","Y")))
 #psi$diff_req<-psi$Mean_PSI_Cter - psi$Mean_PSI_a5
 #psi$diff_req1<-psi$Mean_PSI_Cter - psi$Mean_PSI_a6
-
+psi$difference<-ifelse(psi$difference < -0.16, -0.16,psi$difference)
 psi %>% 
   ggplot(aes(x = Amino_acid_1, 
              y = Amino_acid_2))+
   geom_tile(aes(fill = difference), alpha = 3)+
-  scale_fill_gradientn("PSI-Cter",colours=c(
+  scale_fill_gradientn("PSI-Cter",colours=rev(c(
     "#F7931E", 
     "#F5AB53", 
     "#F4BB75", 
@@ -449,9 +449,9 @@ psi %>%
     "#6D6BF0", 
     "#4240F6", 
     "#0000FF"
-  ), na.value = "grey98",
-  values = scales::rescale(round(seq(-0.2,0.2,0.4/10),2)),
-  limits = c(-0.2,0.2))+
+  )), na.value = "grey98",
+  values = scales::rescale(round(seq(-0.16,0.16,0.32/10),2)),
+  limits = c(-0.16,0.16))+
   #scale_fill_continuous(, )+
   coord_equal()+
   theme_bw()+
@@ -462,6 +462,39 @@ write.csv(psi,
           paste0("Y:/lab data/susmitha/edwin/for_paper/new_dataset/plots/new_dataset_plots/","psi_diff.csv") ) 
 
 psi<-read.csv( paste0("Y:/lab data/susmitha/edwin/for_paper/new_dataset/plots/new_dataset_plots/","psi_diff.csv"))
+psi$group<-ifelse(psi$Di %in% c("IN","MN","VN","LN"),"N highlighted","others")
+
+psi %>% 
+  ggplot(aes(x = Mean_PSI_Cter, 
+             y = means))+
+ # geom_point(data = psi,aes(fill = group))
+  geom_point(data = subset(psi,psi$group %in% c("N highlighted")), 
+             aes(x = Mean_PSI_Cter,
+                 y = means
+             ), 
+             color = "blue", 
+      
+         alpha = 0.4)+
+  geom_point(data = subset(psi,!(psi$group %in% c("N highlighted"))), 
+             aes(x = Mean_PSI_Cter,
+                 y = means
+             ), 
+             color = "grey", 
+             alpha = 0.8)+
+  geom_text_repel(data = subset(psi,psi$group %in% c("N highlighted")),
+                aes(x = Mean_PSI_Cter,
+                      y= means,
+                      label = Di),max.overlaps = 15,
+                  segment.color = 'grey50'  )+
+  #ylim(-0.2,0.2)+
+  #scale_fill_continuous(, )+
+  #coord_equal()+
+  theme_bw()+
+  xlim(0,1)+
+  xlab("PSI")+
+  ylab("mean psi -3 to -12")+
+  ggtitle("Scatter plot for psi - mean(PSI)")
+
 
 # --------------------------------------------------------------------------------------------------------------------------------------------------------
 
