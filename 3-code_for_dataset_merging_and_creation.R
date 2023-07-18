@@ -298,6 +298,7 @@ d<-merge(a,b,id = "Translation",all = TRUE)
 write.csv(d,
           paste0(path_output,"dataset_to_submit/Library_12_x.csv"))
 
+
 deg_list<-subset(merged_file_1,merged_file_1$byaa_pooled_PSI < 0.5 & merged_file_1$Codon == "Non Stop Codon" & merged_file_1$sum >=10)
 ###########################################################
 # for other dataset
@@ -484,7 +485,7 @@ write.csv(merged_file,
 ####
 
 
-#### -------------------------------------- for correlation among different dataset --------------------------------------------------------------###
+#### -------------------------------------- merging with replicate 1 --------------------------------------------------------------###
 merged_file<-read.csv(paste0(path_output,"/merged_file_for_rep2and3.csv"))
 deg<-read.csv( paste0(path_input,"/other_dataset/degron_effect_d1_WT.csv"))
 merged_file_non_stop<-subset(merged_file,merged_file$Codon == "Non Stop Codon")
@@ -574,6 +575,8 @@ PSI_merged$type<-ifelse(row.names(PSI_merged) %in% deg_list$translation, "degron
 write.csv(PSI_merged,
           paste0(path_output,"/PSI_file_for_other_dataset.csv"))
 
+PSI_merged<-read.csv( paste0(path_output,"/PSI_file_for_other_dataset.csv"))
+
 
 # for yeast Cterminal
 merged_file_subset<-merged_file_non_stop
@@ -612,7 +615,10 @@ CTer<-merge(CTer_WT,CTer_das1, by = "raw_counts_translation", all = TRUE)
 
 names(CTer)<-c("Translation","WT_replicate2","WT_replicate3","Das1_replicate2","Das1_replicate3")
 
-yeast<-read.csv(paste0(path_input,"yeast_prot.tsv"), sep = "\t")
+#yeast1<-read.csv(paste0(path_input,"yeast_prot.tsv"), sep = "\t")
+yeast<-read.csv(paste0(path_input,"yeast_uniprot.tsv"), sep = "\t")
+
+
 yeast$raw_counts_translation<-substr(yeast$Sequence,(nchar(yeast$Sequence)-11),(nchar(yeast$Sequence)))
 
 yeast_CTer<-subset(CTer,CTer$Translation %in% yeast$raw_counts_translation)
@@ -623,16 +629,19 @@ yeast_CTer$type<-ifelse(row.names(yeast_CTer) %in% deg_list$translation, "degron
 write.csv(yeast_CTer,
           paste0(path_output,"/yeast_Cter_all.csv"))
 
+#yeast_CTer1<-read.csv(paste0(path_output,"/yeast_Cter_all.csv"))
+
 yeast_CTer<-yeast_CTer[,c("Translation",
                           "Entry",
                           "Entry.Name",
                           "Gene.Names",
+                          "Gene.Names..ordered.locus.",
                           "WT_replicate2",
                           "WT_replicate3",                        
                           "Das1_replicate2",
                           "Das1_replicate3",
                           "type")]
-names(yeast_CTer)<-c("Translation","UniprotID","Gene_Name","Synonymous_Gene_Name",
+names(yeast_CTer)<-c("Translation","UniprotID","Gene_Name","Synonymous_Gene_Name","Systematic_Name",
                      "WT_replicate2",
                      "WT_replicate3",                        
                      "Das1_replicate2",

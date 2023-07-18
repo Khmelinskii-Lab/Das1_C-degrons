@@ -830,7 +830,7 @@ stabilized$NormFreqAll<-(stabilized$frequency/stabilized$freqAllData)
 
 stabilized[stabilized$log2NormFreqAll == "-Inf",c("log2NormFreqAll")]<-NA
 
-pdf(paste0(path_plot,"FigureS5/Stabilized_Frequency_Doa10.pdf"))
+pdf(paste0(path_plot,"Figure5/Stabilized_Frequency_Doa10.pdf"))
 print(
   plot_grid(
     
@@ -974,7 +974,7 @@ Intermediate$NormFreqAll<-(Intermediate$frequency/Intermediate$freqAllData)
 
 Intermediate[Intermediate$log2NormFreqAll == "-Inf",c("log2NormFreqAll")]<-NA
 
-pdf(paste0(path_plot,"FigureS5/Intermediate_Frequency_Doa10.pdf"))
+pdf(paste0(path_plot,"Figure5/Intermediate_Frequency_Doa10.pdf"))
 print(
   plot_grid(
     ggplot(Intermediate, aes (x = position,

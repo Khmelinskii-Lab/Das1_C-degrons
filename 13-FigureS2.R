@@ -305,3 +305,44 @@ k2_cluster$X<-NULL
 
 
 
+### subset for required motifs from paper - need not run as all the clusters are already plotted
+
+
+# formation of seqlogo based on contribution score
+instable_shap<-instable_shap[order(row.names(instable_shap)),]
+normalized_data_instable<-normalized_data_instable[order(row.names(normalized_data_instable)),]
+seq<-instable_shap[,1:240] * normalized_data_instable[,1:240]
+
+for (i  in 1:max(k2_cluster$k2.cluster)) {
+  #i<-1
+  #seq_required<-subset(instable_shap,row.names(instable_shap) %in% row.names(subset(k2_cluster,k2_cluster$`k2$cluster` == i)))
+  seq_required<-subset(seq,row.names(seq) %in% (subset(k2_cluster,k2_cluster$k2.cluster == i))[,"translation"])
+  column_means<-colMeans(seq_required)
+  
+  data_seqlogo<-data.frame(matrix(t(column_means[1:240]), nrow=20, byrow=FALSE))
+  names(data_seqlogo)<-as.character(-12:-1)
+  row.names(data_seqlogo)<-c("A","C","D","E","F","G","H","I","K","L","M","N","P","Q","R","S","T","V","W","Y")
+  
+  data_seqlogo[data_seqlogo < 0.05]<-0
+  
+  
+  if (sum(data_seqlogo) > 0) {
+    print(ggseqlogo(as.matrix(data_seqlogo), method='custom', seq_type='aa') +
+            #theme(axis.text.x = element_blank())+
+            ylab('Contribution Score Mean')+
+            xlab("Position")+
+            theme(
+              axis.ticks.y = element_line(size =1))+
+            annotate(geom = "text",
+                     x=2.5,
+                     y = max(data_seqlogo)+0.015, 
+                     label = paste0("Motif : ",i,", \n # Peptides : ",nrow(seq_required)))+
+            ylim(min(data_seqlogo)-0.05, max(data_seqlogo)+0.1)+
+            annotate(geom = 'segment', y = 0, yend = 0, color = 'black', x = 1, xend = Inf, size = 0.25) )
+    dev.off()
+  } else{
+    paste0(i,"has no data")
+  }
+  
+  print(i)
+}

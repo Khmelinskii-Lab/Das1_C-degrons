@@ -478,7 +478,7 @@ dev.off()
 
 write.csv(WT_Das1,paste0(path_output,"WT_Das1_Cter.csv"))
 
-WT_Das1<-read.csv(paste0(path_output,"WT_Das1_Cter.csv"))
+#WT_Das1<-read.csv(paste0(path_output,"WT_Das1_Cter.csv"))
 #hydrophobicity versus PSI
 
 # plot for distibution of hydrophobicity versus PSI
@@ -515,12 +515,15 @@ plot_grid(PSI_hydro,densi)
 dev.off()
 
 
-yeastmine2<-read.csv(paste0(path_input,"yeastmine_2.csv"), sep = ",", header = FALSE)
-names(yeastmine2)<-c("GeneID","Systematic_Name","Organism","Standard_Name","Gene_Name","Protein_Standard_Name","Protein_Systematic_Name","Gene_Qualifier","Feature_Type","Residue")
+
+
+yeastmine2<-read.csv(paste0(path_input,"yeastmine_3.csv"), sep = ",", header = FALSE)
+names(yeastmine2)<-c("GeneID","Gene_Systematic_Name","Organism","Standard_Name","Gene_Name","Gene_Qualifier","Ontology_Term_ID","Ontology_Term_Name","Ontology_Term_Namespace","Protein_Standard_Name","Residue","Protein_Systematic_Name")
 yeastmine2$Residue<-substr(yeastmine2$Residue,1,(nchar(yeastmine2$Residue)-1))
 yeastmine2$translation<-substr(yeastmine2$Residue,(nchar(yeastmine2$Residue)-11),(nchar(yeastmine2$Residue)))
 
 yeastmine2<-yeastmine2[,c("Protein_Systematic_Name","Gene_Qualifier","translation")]
+yeastmine2<-unique(yeastmine2)
 ORF<-merge(WT_Das1,yeastmine2, by = "translation")
 
 stabilized_ORF<-subset(ORF,ORF$category == "Stabilized")
@@ -547,7 +550,7 @@ q[3,9:12]<-q[3,5:8]/(5244/6586)
 q[2,9:12]<-q[2,5:8]/(699/6586)
 q[1,9:12]<-q[1,5:8]/(673/6586)
 
-names(q)<-c("Stabilized","Intemediate","NoEffect","UnstableButNoEffect","freq_Stabilized","freq_Intermediate","freq_unstableNoEffect","freq_NoEffect","Norm_Stabilized","Norm_Intermediate","Norm_Noeffect","Norm_Unstable_NoEffect")
+names(q)<-c("Stabilized","Intemediate","NoEffect","UnstableButNoEffect","freq_Stabilized","freq_Intermediate","freq_unstableNoEffect","freq_NoEffect","Norm_Stabilized","Norm_Intermediate","Norm_Unstable_NoEffect","Norm_Noeffect")
 q$Stabilized<-as.numeric(q$Stabilized)
 q$Intemediate<-as.numeric(q$Intemediate)
 q$NoEffect<-as.numeric(q$NoEffect)
@@ -556,6 +559,7 @@ f<-chisq.test(as.data.frame(t(q[,1:4])))
 q$ORF<-row.names(q)
 q_melt<-melt(q[,9:13], id = "ORF")
 
+pdf(paste0(path_plot,"FigureS6/ORF_type_enrichment.pdf"))
 ggplot(q_melt, aes(fill=variable , y=value, x=ORF)) + 
   geom_bar(position="dodge", stat="identity")+
   theme_bw()+
@@ -563,7 +567,7 @@ ggplot(q_melt, aes(fill=variable , y=value, x=ORF)) +
   xlab("Normalized Value")+
   scale_fill_manual(values=c("#2E2D4D","#4290C0","#677DB7","#999999"))+
   ggtitle("Enrichment of ORF type")
-
+dev.off()
 
 
 # go 
@@ -575,10 +579,21 @@ names(yeastmine2)<-c("GeneID","Gene_Systematic_Name","Organism","Standard_Name",
 yeastmine2$Residue<-substr(yeastmine2$Residue,1,(nchar(yeastmine2$Residue)-1))
 yeastmine2$translation<-substr(yeastmine2$Residue,(nchar(yeastmine2$Residue)-11),(nchar(yeastmine2$Residue)))
 
-yeastmine2<-yeastmine2[,c("GeneID","Protein_Systematic_Name","Gene_Qualifier","translation","Ontology_Term_ID","Ontology_Term_Name","Ontology_Term_Namespace")]
+yeastmine2<-yeastmine2[,c("GeneID","Protein_Systematic_Name","Gene_Qualifier","translation")]
 yeastmine2<-unique(yeastmine2)
 
 GO<-merge(WT_Das1,yeastmine2, id = "translation")
+slim<-read.csv(paste0(path_input,"go_slim_mapping.tsv"), sep = "\t", header = FALSE)
+names(slim)<-c("Protein_Systematic_Name","Gene_Symbol","GeneID","Slim_Ontology","Slim_Term","GO_ID","SLim_Feature_type")
+GO<-merge(GO,slim, id = "GeneID")
+GO<-unique(GO)
+
+GO$gotermid<-paste0(GO$GO_ID, "_", GO$Slim_Term,"_",GO$Slim_Ontology)
+stabilized_for_go<-subset(GO,GO$category == "Stabilized")
+stabilized_for_go<-stabilized_for_go[,c("translation","gotermid","Protein_Systematic_Name")]
+stabilized_for_go<-unique(stabilized_for_go)
+
+######
 GO$gotermid<-paste0(GO$Ontology_Term_ID, "_", GO$Ontology_Term_Name,"_",GO$Ontology_Term_Namespace)
 stabilized_for_go<-subset(GO,GO$category == "Stabilized")
 stabilized_for_go<-stabilized_for_go[,c("translation","gotermid","Protein_Systematic_Name")]
@@ -594,37 +609,56 @@ stable_merged_GO<-merge(a,b, id = "Var1", all.x = TRUE)
 stable_merged_GO$norm_freq<-(stable_merged_GO$Frequency_stabilized/199)/(stable_merged_GO$Frequency_all/6580)
 
 
-stable_merged_GO<-subset(stable_merged_GO,stable_merged_GO$Frequency_stabilized > 5)
+stable_merged_GO<-subset(stable_merged_GO,stable_merged_GO$Frequency_stabilized > 2)
 stable_merged_GO$GOID<-str_split_fixed(stable_merged_GO$GO,"_",3)[,1]
 stable_merged_GO$GOName<-str_split_fixed(stable_merged_GO$GO,"_",3)[,2]
 stable_merged_GO$GONapspace<-str_split_fixed(stable_merged_GO$GO,"_",3)[,3]
-stable_merged_GO$GONapspace<-ifelse(stable_merged_GO$GONapspace == "process_biological_process","biological_process",stable_merged_GO$GONapspace)
-stable_merged_GO$GONapspace<-ifelse(stable_merged_GO$GONapspace == "function_molecular_function","molecular_function",stable_merged_GO$GONapspace)
-stable_merged_GO$GONapspace<-ifelse(stable_merged_GO$GONapspace == "component_cellular_component","cellular_component",stable_merged_GO$GONapspace)
+
+#stable_merged_GO$GONapspace<-ifelse(stable_merged_GO$GONapspace == "process_biological_process","biological_process",stable_merged_GO$GONapspace)
+#stable_merged_GO$GONapspace<-ifelse(stable_merged_GO$GONapspace == "function_molecular_function","molecular_function",stable_merged_GO$GONapspace)
+#stable_merged_GO$GONapspace<-ifelse(stable_merged_GO$GONapspace == "component_cellular_component","cellular_component",stable_merged_GO$GONapspace)
 
 stable_merged_GO$status<-ifelse(stable_merged_GO$norm_freq< 1, "Not Enriched","Enriched")
 stable_merged_GO<-stable_merged_GO[order(stable_merged_GO$GONapspace),]
 
 
-pdf("GO_term_with_class.pdf")
+pdf(paste0(path_plot,"FigureS6/GO_term_with_class.pdf"))
 
 ggplot(data=stable_merged_GO, aes(x=norm_freq , y=GOName,fill=status)) +
   geom_bar(stat="identity" ,position="dodge")+
   theme_bw()+
   geom_text(aes(label=paste0(Frequency_stabilized," / ",Frequency_all)), vjust=0.3, hjust = 0,color="black", size=2)+
-  theme(text = element_text(size = 8))+
+  theme(text = element_text(size = 6))+
   #theme(axis.text.y=element_text(aes(color=GONapspace)))+
   facet_wrap(~GONapspace)+
   xlab("Normalized Frequency")+
   ylab("Gene Ontology Name")+
-  xlim(0,15)+
+  xlim(0,11)+
   ggtitle("GO enrichment for stabilized group")+
   scale_fill_manual(values = c( "Enriched" = "#ff5400",
                                 "Not Enriched" = "#8d99ae"))
 
 dev.off()
 
+stable_merged_GO<-stable_merged_GO %>% 
+  arrange(desc(norm_freq)) %>% 
+  group_by(GONapspace) %>%
+  slice(1:11)
 
+stable_merged_GO<-subset(stable_merged_GO,!(stable_merged_GO$GOName %in% c("cellular component","molecular function","biological process")))
+ggplot(data=stable_merged_GO, aes(x=norm_freq , y=GOName,fill=status)) +
+  geom_bar(stat="identity" ,position="dodge")+
+  theme_bw()+
+  geom_text(aes(label=paste0(Frequency_stabilized," / ",Frequency_all)), vjust=0.3, hjust = 0,color="black", size=2)+
+  theme(text = element_text(size = 6))+
+  #theme(axis.text.y=element_text(aes(color=GONapspace)))+
+  facet_wrap(~GONapspace)+
+  xlab("Normalized Frequency")+
+  ylab("Gene Ontology Name")+
+  xlim(0,11)+
+  ggtitle("GO enrichment for stabilized group")+
+  scale_fill_manual(values = c( "Enriched" = "#ff5400",
+                                "Not Enriched" = "#8d99ae"))
 
 #### marking
 

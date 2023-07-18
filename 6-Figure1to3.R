@@ -433,6 +433,8 @@ psi$Amino_acid_2<-factor(psi$Amino_acid_2, levels = rev(c("A","C","D","E","F","G
 #psi$diff_req<-psi$Mean_PSI_Cter - psi$Mean_PSI_a5
 #psi$diff_req1<-psi$Mean_PSI_Cter - psi$Mean_PSI_a6
 psi$difference<-ifelse(psi$difference < -0.16, -0.16,psi$difference)
+pdf(paste0(path_plot,"Figure2/PSI_diffCter.pdf"))
+print(
 psi %>% 
   ggplot(aes(x = Amino_acid_1, 
              y = Amino_acid_2))+
@@ -457,7 +459,8 @@ psi %>%
   theme_bw()+
   xlab("Amino Acid 1 (X)")+
   ylab("Amino Acid 2 (Z)")
-
+)
+dev.off()
 write.csv(psi, 
           paste0("Y:/lab data/susmitha/edwin/for_paper/new_dataset/plots/new_dataset_plots/","psi_diff.csv") ) 
 

@@ -511,7 +511,7 @@ R5_dataset<-R5_dataset[,c(2,1,3)]
 write.csv(R5_dataset,"Y:/lab data/susmitha/edwin/for_paper/output/dataset_for_submission/R4_dataset.csv")
 
 
-Atg1C<-"PSLAASFWRVVG"
+Atg1C<-"LKILRQKMNHQN"
 
 Atg1C_DT_dataset<-as.data.frame(matrix(ncol = 2))
 names(Atg1C_DT_dataset)<-c("Peptides","PSI_Das1")
@@ -740,7 +740,7 @@ write.csv(W3,"Y:/lab data/susmitha/edwin/for_paper/output/dataset_for_submission
 
 Atg1C<-readxl::read_xlsx("Y:/lab data/susmitha/edwin/for_paper/new_data2/capping.xlsx", sheet =6)
 names(Atg1C)<-c("Amino_Acid","WT","Das1")
-Atg1C$Peptides<-paste0("PSLAASFWRVVG", Atg1C$Amino_Acid)
+Atg1C$Peptides<-paste0("LKILRQKMNHQN", Atg1C$Amino_Acid)
 write.csv(Atg1C,"Y:/lab data/susmitha/edwin/for_paper/output/dataset_for_submission/Atg1C_capping.csv")
 
 Rpa12C<-readxl::read_xlsx("Y:/lab data/susmitha/edwin/for_paper/new_data2/capping.xlsx", sheet =7)
